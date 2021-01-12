@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  # redis服务
+  chat-redis:
+    image: redis:5
+    restart: always
+
+  # Nginx负载均衡服务
+  chat-nginx:
+    image: nginx:stable
+    restart: always
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+  # 数据库服务器
+  chat-db:
+    restart: always
+    image: mysql:duobab
+#    image: yisiqi/mysql-asciinema:5
+    environment:
+      - MYSQL_DATABASE=javatest
+      - MYSQL_ROOT_PASSWORD=123456
+
+  # 应用服务器 - 1
+  chat-server-1:
+    restart: always
+    image: duobab:2021010815
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://chat-db:3306/javatest
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=123456
+      - SPRING_REDIS_HOST=chat-redis
+    #ports:
+    #  - 8080:8080
+    depends_on:
+      - chat-db
+      - chat-redis
+
+  # 应用服务器 - 2
+  #chat-server-2:
+  #  restart: always
+  #  image: gdc.docker.iec.io/my-server:lihuiqiang01-20201205
+  #  environment:
+  #    - SPRING_DATASOURCE_URL=jdbc:mysql://chat-db:3306/javatest
+  #    - SPRING_DATASOURCE_USERNAME=root
+  #    - SPRING_DATASOURCE_PASSWORD=123456
+  #    - SPRING_REDIS_HOST=chat-redis
+    #ports:
+    #  - 8081:8080
+  #  depends_on:
+  #    - chat-db
+  #    - chat-redis
+
